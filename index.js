@@ -20,7 +20,7 @@ const typeDefs = gql`
     title: String!
     medium: Medium!
     created: String
-    prize: Int
+    price: Int
     sold: Boolean!
     description: String
   }
@@ -37,7 +37,7 @@ const paintings = [
     title: 'Woman in blue',
     medium: 'WATERCOLOR',
     created: '2019',
-    prize: 300,
+    price: 300,
     sold: false,
     description:
       'Blue, purle and pink tones of a womans face in profile with flowing hair.',
@@ -47,7 +47,7 @@ const paintings = [
     title: 'Purple Mayhem',
     medium: 'WATERCOLOR',
     created: '2019',
-    prize: 900,
+    price: 900,
     sold: false,
     description:
       'Abstract watercolor painting in purple/pinkish color theme with darker and lighter details',
