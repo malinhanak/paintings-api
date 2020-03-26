@@ -1,6 +1,10 @@
 const { ApolloServer, gql } = require('apollo-server');
+const { GraphQLScalarType } = require('graphql');
+const { Kind } = require('graphql/language');
 
 const typeDefs = gql`
+  scalar Date
+
   enum Medium {
     WATERCOLOR
     WATERCOLOR_MARKER
@@ -19,7 +23,7 @@ const typeDefs = gql`
     id: ID!
     title: String!
     medium: Medium!
-    created: String
+    created: Date
     price: Int
     sold: Boolean!
     description: String
@@ -63,6 +67,23 @@ const resolvers = {
       return paintings.find((painting) => painting.id === id) || null;
     },
   },
+  Date: new GraphQLScalarType({
+    name: 'Date',
+    description: 'Its a date',
+    parseValue(value) {
+      // value form client
+      return new Date(value);
+    },
+    serialize(value) {
+      return value.getTime();
+    },
+    parseLiteral(ast) {
+      if (ast.kind === Kind.INT) {
+        return newDate(ast.value);
+      }
+      return null;
+    },
+  }),
 };
 
 const server = new ApolloServer({
