@@ -1,6 +1,24 @@
 const { ApolloServer, gql } = require('apollo-server');
 const { GraphQLScalarType } = require('graphql');
 const { Kind } = require('graphql/language');
+const mongoose = require('mongoose');
+
+mongoose.connect(
+  'mongodb+srv://malinhanak:malinsartdb@art-api-155rd.mongodb.net/test?retryWrites=true&w=majority',
+  { useNewUrlParser: true },
+);
+const db = mongoose.connection;
+
+const paintingSchema = new mongoose.Schema({
+  title: String,
+  medium: String,
+  created: Date,
+  price: Number,
+  sold: Boolean,
+  description: String,
+});
+
+const Painting = mongoose.model('Painting', paintingSchema);
 
 const typeDefs = gql`
   scalar Date
@@ -21,17 +39,31 @@ const typeDefs = gql`
 
   type Painting {
     id: ID!
-    title: String!
-    medium: Medium!
+    title: String
+    medium: Medium
     created: Date
     price: Int
-    sold: Boolean!
+    sold: Boolean
     description: String
   }
 
   type Query {
     paintings: [Painting]
     painting(id: ID): Painting
+  }
+
+  input PaintingInput {
+    id: ID
+    title: String
+    medium: Medium
+    created: Date
+    price: Int
+    sold: Boolean
+    description: String
+  }
+
+  type Mutation {
+    addPainting(painting: PaintingInput): [Painting]
   }
 `;
 
@@ -40,7 +72,7 @@ const paintings = [
     id: 'womaninblue',
     title: 'Woman in blue',
     medium: 'WATERCOLOR',
-    created: '2019',
+    created: new Date('2019'),
     price: 300,
     sold: false,
     description:
@@ -50,7 +82,7 @@ const paintings = [
     id: 'purplemayhem',
     title: 'Purple Mayhem',
     medium: 'WATERCOLOR',
-    created: '2019',
+    created: new Date('2019'),
     price: 900,
     sold: false,
     description:
@@ -60,13 +92,30 @@ const paintings = [
 
 const resolvers = {
   Query: {
-    paintings: () => {
-      return paintings;
+    paintings: async () => {
+      return await Painting.find();
     },
-    painting: (obj, { id }, context, info) => {
-      return paintings.find((painting) => painting.id === id) || null;
+    painting: async (obj, { id }, context, info) => {
+      return (await Painting.findById(id)) || null;
     },
   },
+
+  Mutation: {
+    addPainting: async (obj, { painting }, { userId }) => {
+      try {
+        if (userId) {
+          await Painting.create({
+            ...painting,
+          });
+          return await Painting.find();
+        }
+        return paintings;
+      } catch (error) {
+        console.log('error', error);
+      }
+    },
+  },
+
   Date: new GraphQLScalarType({
     name: 'Date',
     description: 'Its a date',
@@ -91,12 +140,26 @@ const server = new ApolloServer({
   resolvers,
   introspection: true,
   playground: true,
+  context: ({ req }) => {
+    const fakeUser = {
+      userId: 'iamafakeuser',
+    };
+    // Possible to throw error if user doesn't exists
+    return {
+      ...fakeUser,
+    };
+  },
 });
 
-server
-  .listen({
-    port: process.env.PORT || 4000,
-  })
-  .then(({ url }) => {
-    console.log(`listening at ${url}`);
-  });
+db.on('error', console.error.bind(console, 'connection error:'));
+db.once('open', function() {
+  // we're connected!
+  console.log("we're connected to db!");
+  server
+    .listen({
+      port: process.env.PORT || 4000,
+    })
+    .then(({ url }) => {
+      console.log(`listening at ${url}`);
+    });
+});
