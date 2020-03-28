@@ -1,4 +1,4 @@
-const { ApolloServer, gql } = require('apollo-server');
+const { ApolloServer, gql, PubSub } = require('apollo-server');
 const { GraphQLScalarType } = require('graphql');
 const { Kind } = require('graphql/language');
 const mongoose = require('mongoose');
@@ -62,35 +62,24 @@ const typeDefs = gql`
     description: String
   }
 
+  type Subscription {
+    paintingAdded: Painting
+  }
+
   type Mutation {
     addPainting(painting: PaintingInput): [Painting]
   }
 `;
 
-const paintings = [
-  {
-    id: 'womaninblue',
-    title: 'Woman in blue',
-    medium: 'WATERCOLOR',
-    created: new Date('2019'),
-    price: 300,
-    sold: false,
-    description:
-      'Blue, purle and pink tones of a womans face in profile with flowing hair.',
-  },
-  {
-    id: 'purplemayhem',
-    title: 'Purple Mayhem',
-    medium: 'WATERCOLOR',
-    created: new Date('2019'),
-    price: 900,
-    sold: false,
-    description:
-      'Abstract watercolor painting in purple/pinkish color theme with darker and lighter details',
-  },
-];
+const pubsub = new PubSub();
+const PAINTING_ADDED = 'PAINTING_ADDED';
 
 const resolvers = {
+  Subscription: {
+    paintingAdded: {
+      subscribe: () => pubsub.asyncIterator([PAINTING_ADDED]),
+    },
+  },
   Query: {
     paintings: async () => {
       return await Painting.find();
@@ -104,8 +93,10 @@ const resolvers = {
     addPainting: async (obj, { painting }, { userId }) => {
       try {
         if (userId) {
-          await Painting.create({
-            ...painting,
+          pubsub.publish(PAINTING_ADDED, {
+            paintingAdded: await Painting.create({
+              ...painting,
+            }),
           });
           return await Painting.find();
         }
