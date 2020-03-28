@@ -4,7 +4,7 @@ const { Kind } = require('graphql/language');
 const mongoose = require('mongoose');
 
 mongoose.connect(
-  'mongodb+srv://malinhanak:malinsartdb@art-api-155rd.mongodb.net/test?retryWrites=true&w=majority',
+  `mongodb+srv://malinhanak:${process.env.MONGODB_SECRET}@art-api-155rd.mongodb.net/test?retryWrites=true&w=majority`,
   { useNewUrlParser: true },
 );
 const db = mongoose.connection;
