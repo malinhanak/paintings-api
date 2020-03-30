@@ -48,6 +48,8 @@ const typeDefs = gql`
 
   type Mutation {
     addPainting(painting: PaintingInput): [Painting]
+    deleteOnePainting(id: ID!): Painting
+    updateOnePainting(id: ID!, painting: PaintingInput): Painting
   }
 `;
 

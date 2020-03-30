@@ -50,7 +50,23 @@ const resolvers = {
         }
       }
     },
+    deleteOnePainting: async (obj, { id }, { userId }) => {
+      try {
+        return await Painting.deleteOne({ _id: id });
+      } catch (error) {
+        throw new Error(error.message);
+      }
+    },
+    updateOnePainting: async (obj, { id, painting }, { userId }) => {
+      try {
+        await Painting.updateOne({ _id: id }, { ...painting });
+        return await Painting.findById(id);
+      } catch (error) {
+        throw new Error(error.message);
+      }
+    },
   },
+
   Date: new GraphQLScalarType({
     name: 'Date',
     description: 'Its a date',
