@@ -17,6 +17,17 @@ const typeDefs = gql`
     INK
   }
 
+  type User {
+    id: ID!
+    username: String
+    password: String
+  }
+
+  type LoginResponse {
+    token: String
+    user: User
+  }
+
   type Painting {
     id: ID!
     title: String
@@ -28,6 +39,7 @@ const typeDefs = gql`
   }
 
   type Query {
+    currentUser: User
     paintings: [Painting]
     painting(id: ID): Painting
   }
@@ -47,6 +59,8 @@ const typeDefs = gql`
   }
 
   type Mutation {
+    register(username: String!, password: String!): User!
+    login(username: String!, password: String!): LoginResponse!
     addPainting(painting: PaintingInput): [Painting]
     deleteOnePainting(id: ID!): Painting
     updateOnePainting(id: ID!, painting: PaintingInput): Painting
