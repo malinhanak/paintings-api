@@ -1,7 +1,7 @@
 const { ApolloServer } = require("apollo-server");
 const mongoose = require("mongoose");
-const resolvers = require("./resolvers");
-const typeDefs = require("./typeDefs");
+const resolvers = require("./graphQL/resolvers");
+const typeDefs = require("./graphQL/typeDefs");
 const jwt = require("jsonwebtoken");
 
 mongoose.connect(
@@ -10,7 +10,7 @@ mongoose.connect(
 );
 const db = mongoose.connection;
 
-const getUserFromToken = token => {
+const getUserFromToken = (token) => {
   const authObj = {
     user: null,
     error: null
